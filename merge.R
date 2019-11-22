@@ -80,9 +80,7 @@ participantInfoLookup <- participantInfoLookupTable %>%
 participantInfoLookup$subid <- as.numeric(participantInfoLookup$subid)
 
 
-dfWrite <- 
-  dplyr::inner_join(df, subjectIdLookup, by = "subid") %>%
-  dplyr::inner_join(participantInfoLookup, by = "subid") 
+
 
 onlyComputerPeople <- dplyr::filter(df, robot == 0)
 computerBlocks <- onlyComputerPeople %>% 
@@ -100,15 +98,18 @@ robotBlocks <- onlyRobotPeople %>%
   dplyr::group_by(subid) %>% 
   dplyr::summarise(trials = n()) %>% 
   dplyr::mutate(blocks = trials / 12) %>% 
-  dplyr::inner_join(onlyComputerPeople, by = "subid") %>%
+  dplyr::inner_join(onlyRobotPeople, by = "subid") %>%
   dplyr::group_by(subid) %>%
   dplyr::mutate(block = Vectorize(rep(1:blocks, times = 1, each = 12)), 
                 trial = trial + ((block - 1) * 12)) %>% 
   select(-trials, -block, -blocks)
 
 
+dfWrite <- 
+  rbind.data.frame(robotBlocks, computerBlocks) %>%
+  dplyr::inner_join(subjectIdLookup, by = "subid") %>%
+  dplyr::inner_join(participantInfoLookup, by = "subid") 
 
-computerBlocks
 write.csv(dfWrite, file = "merged.csv", row.names = FALSE)
 
 
