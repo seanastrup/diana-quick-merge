@@ -65,10 +65,14 @@ df <- rbind.data.frame(robotFiles, computerFiles) %>%
 # I'm bad and I should feel bad
 ###########################################
 
+# Create subid field from subnum
+# table is joined in creation of `dfWrite`
 subjectIdLookup <- 
   tibble::rowid_to_column(as.data.frame(unique(df$subid)), "ID")
 names(subjectIdLookup) <- c("subnum", "subid")
 
+# Create participant info table from provided .xlsx
+# table is joined in creation of `dfWrite`
 participantInfoLookupTable <- readxl::read_excel("participant_info.xlsx") %>% 
   dplyr::select(`ID #`, Age, Gender)
 names(participantInfoLookupTable) <- c("subid", "age", "sex")
@@ -79,6 +83,11 @@ participantInfoLookup <- participantInfoLookupTable %>%
   )
 participantInfoLookup$subid <- as.numeric(participantInfoLookup$subid)
 
+# create assesment data info table from provided .xlsx
+# table is joined in creation of `dfWrite`
+assesmentDataLookupTable <- readxl::read_excel("assessment_data.xlsx")
+assesmentDataLookupTable[assesmentDataLookupTable == "N/A"] <- NA
+names(assesmentDataLookupTable)[1] <- "subid"
 
 
 
@@ -108,10 +117,9 @@ robotBlocks <- onlyRobotPeople %>%
 dfWrite <- 
   rbind.data.frame(robotBlocks, computerBlocks) %>%
   dplyr::inner_join(subjectIdLookup, by = "subid") %>%
-  dplyr::inner_join(participantInfoLookup, by = "subid") 
+  dplyr::inner_join(participantInfoLookup, by = "subid") %>%
+  dplyr::left_join(assesmentDataLookupTable, by = "subid")
 
 write.csv(dfWrite, file = "merged.csv", row.names = FALSE)
 
-
-
-rm(list = ls())
+# rm(list = ls())
