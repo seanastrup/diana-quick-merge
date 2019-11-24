@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+*.csv
+Mihalache_etal_2019-Analysis+Plotting.R
+computer_task/
+robot_task/
+merged.csv
+*.xlsx
+*.Rproj
